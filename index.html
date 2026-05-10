@@ -69,6 +69,28 @@
     margin-bottom: 2px;
   }
 
+  .prototype-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #fff;
+    color: var(--primary);
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 120ms, box-shadow 120ms;
+  }
+  .prototype-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .prototype-cta .arrow { transition: transform 120ms; }
+  .prototype-cta:hover .arrow { transform: translateX(3px); }
+
   /* ── Content ── */
   .content {
     max-width: 1200px;
@@ -316,6 +338,9 @@
     <div class="meta-item"><strong>Status</strong> Draft</div>
     <div class="meta-item"><strong>Stakeholders</strong> M365 Copilot Leadership, Experiment Owners, Expedite Engineering, Data Science</div>
   </div>
+  <a class="prototype-cta" href="prototype/">
+    🚀 View Live Prototype <span class="arrow">→</span>
+  </a>
 </div>
 
 <div class="content">

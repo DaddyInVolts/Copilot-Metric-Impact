@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Copilot Metric Impact — Prototype</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #faf9f8;
+    --surface: #ffffff;
+    --border: #edebe9;
+    --border-strong: #d2d0ce;
+    --text: #201f1e;
+    --text-muted: #605e5c;
+    --text-subtle: #8a8886;
+    --accent: #0078d4;
+    --accent-hover: #106ebe;
+    --green: #107c10;
+    --green-bg: #dff6dd;
+    --red: #d13438;
+    --red-bg: #fde7e9;
+    --amber: #ca5010;
+    --amber-bg: #fff4ce;
+    --grey-bar: #c8c6c4;
+    --header-bg: #1a2332;
+    --shadow: 0 1.6px 3.6px rgba(0,0,0,0.08), 0 0.3px 0.9px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Top app bar */
+  .app-bar {
+    background: var(--header-bg);
+    color: #fff;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .app-bar .logo {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #0078d4 0%, #00bcf2 100%);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+  }
+  .app-bar .brand { font-weight: 600; font-size: 15px; }
+  .app-bar .crumbs { color: #b3b0ad; font-size: 13px; margin-left: 8px; }
+  .app-bar .crumbs strong { color: #fff; }
+  .app-bar .spacer { flex: 1; }
+  .app-bar .freshness { font-size: 12px; color: #a19f9d; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 52px);
+  }
+
+  /* Left nav */
+  .left-nav {
+    background: #fff;
+    border-right: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .left-nav .section-label {
+    text-transform: uppercase;
+    font-size: 11px;
+    color: var(--text-subtle);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 8px 16px;
+  }
+  .left-nav a {
+    display: block;
+    padding: 8px 16px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+  }
+  .left-nav a:hover { background: #f3f2f1; }
+  .left-nav a.active {
+    background: #eff6fc;
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+  .left-nav .nested {
+    padding-left: 16px;
+    font-size: 12.5px;
+  }
+
+  /* Main */
+  .main {
+    padding: 24px 32px 48px;
+    overflow-x: hidden;
+  }
+  .page-title {
+    margin: 0 0 4px 0;
+    font-size: 24px;
+    font-weight: 600;
+  }
+  .page-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+  }
+  .filter {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 130px;
+  }
+  .filter label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .filter input, .filter select {
+    padding: 6px 8px;
+    border: 1px solid var(--border-strong);
+    border-radius: 2px;
+    font: inherit;
+    background: #fff;
+  }
+  .filter select { min-width: 150px; }
+  .filter-bar .actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+  }
+  button.btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border-strong);
+    background: #fff;
+    border-radius: 2px;
+    font: inherit;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text);
+  }
+  button.btn:hover { background: #f3f2f1; }
+  button.btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  button.btn.primary:hover { background: var(--accent-hover); }
+
+  /* Metric selector row */
+  .metric-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .metric-row label {
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .metric-row select {
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 2px;
+    font: inherit;
+    font-size: 14px;
+    min-width: 320px;
+    font-weight: 600;
+  }
+  .metric-row .stats {
+    margin-left: auto;
+    display: flex;
+    gap: 18px;
+    font-size: 13px;
+  }
+  .metric-row .stats .stat strong {
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .metric-row .stats .stat .label {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  /* Chart card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 20px 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .card-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .chart-wrap {
+    position: relative;
+    height: 480px;
+    width: 100%;
+  }
+  .clear-selection {
+    display: none;
+    background: #eff6fc;
+    color: var(--accent);
+    border: 1px solid #c7e0f4;
+    padding: 4px 10px;
+    border-radius: 2px;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .clear-selection.visible { display: inline-block; }
+  .clear-selection:hover { background: #deecf9; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+  .empty-state h3 {
+    margin: 0 0 8px 0;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .empty-state p { margin: 0; font-size: 13px; }
+  .hidden { display: none !important; }
+
+  /* Table */
+  table.exp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.exp-table th {
+    background: #faf9f8;
+    border-bottom: 1px solid var(--border-strong);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  table.exp-table th:hover { background: #f3f2f1; }
+  table.exp-table th .sort-arrow {
+    color: var(--accent);
+    margin-left: 4px;
+    font-size: 11px;
+  }
+  table.exp-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  table.exp-table tr:hover td { background: #fafafa; }
+  table.exp-table tr.selected td { background: #eff6fc !important; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge.ship { background: var(--green-bg); color: var(--green); }
+  .badge.no-ship { background: var(--red-bg); color: var(--red); }
+  .badge.inconclusive { background: #f3f2f1; color: var(--text-muted); }
+  .badge.active { background: var(--green-bg); color: var(--green); }
+  .badge.stopped { background: #f3f2f1; color: var(--text-muted); }
+  .badge.completed { background: #deecf9; color: var(--accent); }
+
+  .impact-pos { color: var(--green); font-weight: 600; }
+  .impact-neg { color: var(--red); font-weight: 600; }
+
+  a.details-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  a.details-link:hover { text-decoration: underline; }
+
+  .table-footer {
+    padding: 10px 4px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #323130;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms, transform 200ms;
+    z-index: 100;
+  }
+  .toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  .prototype-banner {
+    background: #fff4ce;
+    border: 1px solid #f4d35e;
+    color: #594400;
+    padding: 8px 16px;
+    font-size: 12px;
+    text-align: center;
+  }
+  .prototype-banner strong { color: #3b2a00; }
+</style>
+</head>
+<body>
+
+<div class="prototype-banner">
+  <strong>⚙ PROTOTYPE</strong> — Uses generated fake data for demonstration. Not connected to real Expedite scorecards.
+</div>
+
+<div class="app-bar">
+  <div class="logo">E</div>
+  <div class="brand">Expedite</div>
+  <div class="crumbs">Copilot &nbsp;›&nbsp; <strong>Metric Impact</strong></div>
+  <div class="spacer"></div>
+  <div class="freshness">Data last updated: 2026-05-09 06:00 UTC</div>
+</div>
+
+<div class="layout">
+  <nav class="left-nav">
+    <div class="section-label">Copilot</div>
+    <a href="#">Copilot Experiment Impact</a>
+    <a href="#" class="active">Copilot Metric Impact</a>
+    <div class="section-label" style="margin-top:16px;">Workspaces</div>
+    <a href="#">Experiments</a>
+    <a href="#">Metric Sets</a>
+    <a href="#">Scorecards</a>
+    <a href="#">Data Sources</a>
+  </nav>
+
+  <main class="main">
+    <h1 class="page-title">Copilot Metric Impact</h1>
+    <div class="page-subtitle">Which experiments improved or degraded a Copilot metric? Ranked by impact magnitude. Statistically significant results only (p ≤ 0.05).</div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="filter">
+        <label for="f-start">Start Date</label>
+        <input type="date" id="f-start" value="2026-04-09">
+      </div>
+      <div class="filter">
+        <label for="f-end">End Date</label>
+        <input type="date" id="f-end" value="2026-05-09">
+      </div>
+      <div class="filter">
+        <label for="f-status">Status</label>
+        <select id="f-status">
+          <option value="">All</option>
+          <option value="Active">Active</option>
+          <option value="Completed">Completed</option>
+          <option value="Stopped">Stopped</option>
+        </select>
+      </div>
+      <div class="filter">
+        <label for="f-ring">Ring</label>
+        <select id="f-ring">
+          <option value="">All</option>
+          <option value="production">production</option>
+          <option value="ring4">ring4</option>
+          <option value="ring3">ring3</option>
+          <option value="dogfood">dogfood</option>
+        </select>
+      </div>
+      <div class="filter">
+        <label for="f-audience">Audience</label>
+        <select id="f-audience">
+          <option value="">All</option>
+          <option value="Commercial">Commercial</option>
+          <option value="Consumer">Consumer</option>
+          <option value="Enterprise">Enterprise</option>
+        </select>
+      </div>
+      <div class="filter">
+        <label for="f-product">Product</label>
+        <select id="f-product">
+          <option value="">All</option>
+          <option value="Word">Word</option>
+          <option value="Excel">Excel</option>
+          <option value="PowerPoint">PowerPoint</option>
+          <option value="Outlook">Outlook</option>
+          <option value="Teams">Teams</option>
+          <option value="OneNote">OneNote</option>
+          <option value="Loop">Loop</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btn-copy">🔗 Copy Link</button>
+        <button class="btn primary" id="btn-export">⬇ Export to Excel</button>
+      </div>
+    </div>
+
+    <!-- Metric selector + summary -->
+    <div class="metric-row">
+      <label for="metric">Metric:</label>
+      <select id="metric">
+        <option value="ChatSeenWAU">Chat Seen WAU (100%)</option>
+        <option value="ChatWAU">Chat WAU (100%)</option>
+        <option value="RetainedWAU">Retained WAU (100%)</option>
+        <option value="DSATRatio">DSAT Ratio</option>
+        <option value="UsersLicensePending">Users License Pending (%)</option>
+        <option value="EditModeBizChatAppChatWAU">EditMode/BizChat/AppChat WAU (100%)</option>
+        <option value="EditModeWAU">EditMode WAU (100%)</option>
+      </select>
+      <div class="stats">
+        <div class="stat"><strong id="stat-count">–</strong><div class="label">Significant experiments</div></div>
+        <div class="stat"><strong id="stat-positive" style="color:var(--green);">–</strong><div class="label">Improved</div></div>
+        <div class="stat"><strong id="stat-negative" style="color:var(--red);">–</strong><div class="label">Degraded</div></div>
+        <div class="stat"><strong id="stat-net">–</strong><div class="label">Net impact</div></div>
+      </div>
+    </div>
+
+    <!-- Chart card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Experiments Ranked by Impact <span id="chart-metric-name" style="font-weight:400;color:var(--text-muted);"></span></h2>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <button class="clear-selection" id="clear-selection">✕ Clear selection</button>
+          <div class="card-meta">Click a bar to drill down</div>
+        </div>
+      </div>
+      <div class="chart-wrap" id="chart-wrap">
+        <canvas id="impact-chart"></canvas>
+      </div>
+      <div class="empty-state hidden" id="empty-state-chart">
+        <div class="icon">📊</div>
+        <h3>No statistically significant experiments found</h3>
+        <p>No experiments meet the p ≤ 0.05 threshold for this metric with the selected filters.<br>Try broadening your date range or adjusting filters.</p>
+      </div>
+    </div>
+
+    <!-- Table card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Experiment Details</h2>
+        <div class="card-meta" id="table-count"></div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="exp-table" id="exp-table">
+          <thead>
+            <tr>
+              <th data-col="recommendation">IDEAS Rec.</th>
+              <th data-col="name">Name</th>
+              <th data-col="status">Status</th>
+              <th data-col="product">Product</th>
+              <th data-col="started">Started</th>
+              <th data-col="ring">Ring</th>
+              <th data-col="audience">Audience</th>
+              <th data-col="impact" class="active-sort">Impact <span class="sort-arrow">▼</span></th>
+              <th data-col="pvalue">p-value</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="exp-tbody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state hidden" id="empty-state-table">
+        <p>No rows to display.</p>
+      </div>
+      <div class="table-footer" id="table-footer"></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+/* ------------------------------------------------------------------ *
+ * Fake data generation
+ * ------------------------------------------------------------------ */
+const METRICS = {
+  ChatSeenWAU:               { label: 'Chat Seen WAU (100%)',                unit: 'users',   format: 'count' },
+  ChatWAU:                   { label: 'Chat WAU (100%)',                     unit: 'users',   format: 'count' },
+  RetainedWAU:               { label: 'Retained WAU (100%)',                 unit: 'users',   format: 'count' },
+  DSATRatio:                 { label: 'DSAT Ratio',                          unit: 'ratio',   format: 'ratio' },
+  UsersLicensePending:       { label: 'Users License Pending (%)',           unit: '%',       format: 'pct'   },
+  EditModeBizChatAppChatWAU: { label: 'EditMode/BizChat/AppChat WAU (100%)', unit: 'users',   format: 'count' },
+  EditModeWAU:               { label: 'EditMode WAU (100%)',                 unit: 'users',   format: 'count' },
+};
+
+const PRODUCTS  = ['Word','Excel','PowerPoint','Outlook','Teams','OneNote','Loop'];
+const RINGS     = ['production','production','production','ring4','ring3','dogfood'];
+const AUDIENCES = ['Commercial','Commercial','Consumer','Enterprise'];
+const STATUSES  = ['Active','Active','Completed','Stopped'];
+
+const FEATURE_SEEDS = [
+  ['Copilot Chat Redesign',         'Conversational UI Refresh'],
+  ['Smart Reply Suggestions',       'Inline Reply Cards'],
+  ['Summarize Long Threads',        'Thread Summary V2'],
+  ['Catch Up Nudge',                'Daily Catch-Up Pill'],
+  ['Meeting Recap Card',            'Recap Highlights'],
+  ['Draft With Copilot',            'Draft Authoring V3'],
+  ['Voice Input',                   'Push-to-Talk'],
+  ['Cross-App Context',             'Universal Context Panel'],
+  ['Skill Picker UX',               'Skill Carousel'],
+  ['Action Buttons',                'Quick Actions Row'],
+  ['Reference Citations',           'Inline Citations V2'],
+  ['Personalization Memory',        'User Memory Beta'],
+  ['Multi-Turn Reasoning',          'Chain-of-Thought Mode'],
+  ['Image Generation',              'DALL-E Integration'],
+  ['File Upload Drop',              'Drop Zone Modal'],
+  ['Tone Control',                  'Tone Slider'],
+  ['Length Slider',                 'Response Length Control'],
+  ['Side Panel Pin',                'Sticky Side Panel'],
+  ['Welcome Tour',                  'First-Run Coachmarks'],
+  ['Empty State Prompts',           'Suggested Prompts'],
+  ['Compose Box Refresh',           'Refreshed Composer'],
+  ['Auto-Complete Tab',             'Tab-to-Complete'],
+  ['Slash Commands',                '/Commands V1'],
+  ['@-Mention People',              '@Mentions Beta'],
+  ['Keyboard Shortcuts',            'New Hotkey Map'],
+  ['Dark Mode Polish',              'Dark Theme V3'],
+  ['Loading Skeleton',              'Skeleton Loader'],
+  ['Error Recovery',                'Smart Retry'],
+  ['Feedback Thumbs',               'Thumb Inline Feedback'],
+  ['Citation Hover Card',           'Source Preview'],
+];
+
+// Deterministic pseudo-random
+function mulberry32(seed) {
+  let t = seed;
+  return function() {
+    t |= 0; t = (t + 0x6D2B79F5) | 0;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rng = mulberry32(20260509);
+function pick(arr) { return arr[Math.floor(rng() * arr.length)]; }
+function rand(min, max) { return rng() * (max - min) + min; }
+function randDate(daysAgoMin, daysAgoMax) {
+  const ms = Date.now() - rand(daysAgoMin, daysAgoMax) * 86400000;
+  return new Date(ms);
+}
+
+// Build experiment records — each experiment has impact for ALL metrics.
+function buildData() {
+  const records = [];
+  let id = 1000;
+
+  FEATURE_SEEDS.forEach((seed, idx) => {
+    // Most features get 1 step; a handful get 2-3 steps to demo deduplication.
+    const stepCount = (idx % 9 === 0) ? 3 : (idx % 5 === 0) ? 2 : 1;
+    const featureName     = seed[0];
+    const progressionName = seed[1];
+    const product         = pick(PRODUCTS);
+
+    for (let s = 0; s < stepCount; s++) {
+      const startDays = rand(3, 35);
+      const ring = (s === 0) ? 'production' : pick(RINGS);
+      const audience = pick(AUDIENCES);
+      const status = pick(STATUSES);
+      const treatmentCount = Math.round(rand(15000, 850000));
+
+      // Per-metric impact: produce realistic numbers and p-values.
+      const metrics = {};
+      Object.keys(METRICS).forEach(mk => {
+        const m = METRICS[mk];
+        let value, pValue;
+        // bias: ~45% positive, ~35% negative, ~20% neutral-ish (insignificant)
+        const r = rng();
+        const sign = r < 0.45 ? 1 : (r < 0.80 ? -1 : (rng() < 0.5 ? 1 : -1));
+        const significant = r < 0.80 ? rng() < 0.85 : rng() < 0.30;
+
+        if (m.format === 'count') {
+          const magnitude = Math.pow(10, rand(2.5, 5.6));
+          value = Math.round(sign * magnitude);
+        } else if (m.format === 'ratio') {
+          value = +(sign * rand(0.001, 0.05)).toFixed(4);
+        } else { // pct
+          value = +(sign * rand(0.05, 4.5)).toFixed(2);
+        }
+
+        pValue = significant
+          ? +rand(0.0001, 0.049).toFixed(4)
+          : +rand(0.06, 0.95).toFixed(3);
+
+        metrics[mk] = { value, pValue };
+      });
+
+      // IDEAS Recommendation derived from a "primary" metric judgement on Chat Seen WAU
+      const seen = metrics.ChatSeenWAU;
+      let rec;
+      if (seen.pValue > 0.05) rec = 'Inconclusive';
+      else if (seen.value > 0) rec = 'Ship';
+      else rec = 'No-Ship';
+
+      records.push({
+        id: 'EXP-' + (id++),
+        stepId: 'STEP-' + (id),
+        name: stepCount > 1 ? `${featureName} (Step ${s+1})` : featureName,
+        featureName,
+        progressionName,
+        product,
+        ring,
+        audience,
+        status,
+        startedDate: randDate(startDays, startDays + 0.1),
+        treatmentCount,
+        metrics,
+        recommendation: rec,
+      });
+    }
+  });
+  return records;
+}
+
+const ALL_DATA = buildData();
+
+/* ------------------------------------------------------------------ *
+ * Filtering, deduplication, formatting
+ * ------------------------------------------------------------------ */
+function getFilters() {
+  return {
+    start:    document.getElementById('f-start').value,
+    end:      document.getElementById('f-end').value,
+    status:   document.getElementById('f-status').value,
+    ring:     document.getElementById('f-ring').value,
+    audience: document.getElementById('f-audience').value,
+    product:  document.getElementById('f-product').value,
+    metric:   document.getElementById('metric').value,
+  };
+}
+
+function applyFilters(rows, f) {
+  const startMs = f.start ? new Date(f.start).getTime() : -Infinity;
+  const endMs   = f.end   ? new Date(f.end).getTime() + 86400000 : Infinity;
+  return rows.filter(r => {
+    if (f.status   && r.status   !== f.status)   return false;
+    if (f.ring     && r.ring     !== f.ring)     return false;
+    if (f.audience && r.audience !== f.audience) return false;
+    if (f.product  && r.product  !== f.product)  return false;
+    const d = r.startedDate.getTime();
+    if (d < startMs || d > endMs) return false;
+    return true;
+  });
+}
+
+// R-07: dedupe by (Feature name, Progression name, Product) keeping highest treatmentCount
+function deduplicate(rows) {
+  const map = new Map();
+  for (const r of rows) {
+    const k = `${r.featureName}||${r.progressionName}||${r.product}`;
+    const prev = map.get(k);
+    if (!prev || r.treatmentCount > prev.treatmentCount) map.set(k, r);
+  }
+  return [...map.values()];
+}
+
+// R-06: significance gate p ≤ 0.05 for the SELECTED metric
+function gateSignificance(rows, metricKey) {
+  return rows.filter(r => r.metrics[metricKey].pValue <= 0.05);
+}
+
+function formatImpact(metricKey, value) {
+  const m = METRICS[metricKey];
+  const sign = value > 0 ? '+' : (value < 0 ? '' : '');
+  if (m.format === 'count') {
+    const abs = Math.abs(value);
+    let txt;
+    if (abs >= 1e6) txt = (value/1e6).toFixed(2) + 'M';
+    else if (abs >= 1e3) txt = (value/1e3).toFixed(1) + 'K';
+    else txt = value.toFixed(0);
+    return (value >= 0 ? '+' : '') + txt;
+  }
+  if (m.format === 'ratio') return (value >= 0 ? '+' : '') + value.toFixed(4);
+  if (m.format === 'pct')   return (value >= 0 ? '+' : '') + value.toFixed(2) + ' pp';
+  return sign + value;
+}
+
+function formatDate(d) {
+  return d.toISOString().slice(0,10);
+}
+
+/* ------------------------------------------------------------------ *
+ * Chart
+ * ------------------------------------------------------------------ */
+let chart = null;
+let selectedExpId = null;
+
+function renderChart(rows, metricKey) {
+  const ctx = document.getElementById('impact-chart');
+  const wrap = document.getElementById('chart-wrap');
+  const empty = document.getElementById('empty-state-chart');
+
+  if (rows.length === 0) {
+    wrap.classList.add('hidden');
+    empty.classList.remove('hidden');
+    if (chart) { chart.destroy(); chart = null; }
+    return;
+  }
+  wrap.classList.remove('hidden');
+  empty.classList.add('hidden');
+
+  // sort desc by impact value
+  rows.sort((a, b) => b.metrics[metricKey].value - a.metrics[metricKey].value);
+
+  const labels = rows.map(r => r.name);
+  const values = rows.map(r => r.metrics[metricKey].value);
+  const colors = rows.map(r => {
+    const v = r.metrics[metricKey].value;
+    if (selectedExpId && r.id !== selectedExpId) return 'rgba(200,198,196,0.6)';
+    return v >= 0 ? '#107c10' : '#d13438';
+  });
+  const borderColors = rows.map(r => {
+    const v = r.metrics[metricKey].value;
+    if (selectedExpId && r.id !== selectedExpId) return 'rgba(200,198,196,1)';
+    return v >= 0 ? '#0e6a0e' : '#a4262c';
+  });
+
+  if (chart) chart.destroy();
+
+  // dynamic height for many rows
+  const chartHeight = Math.max(400, rows.length * 22);
+  wrap.style.height = chartHeight + 'px';
+
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: METRICS[metricKey].label,
+        data: values,
+        backgroundColor: colors,
+        borderColor: borderColors,
+        borderWidth: 1,
+        borderRadius: 2,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 250 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => rows[items[0].dataIndex].name,
+            label: (item) => {
+              const r = rows[item.dataIndex];
+              const m = r.metrics[metricKey];
+              return [
+                `Impact: ${formatImpact(metricKey, m.value)}`,
+                `p-value: ${m.pValue.toFixed(4)}`,
+                `Product: ${r.product} · Ring: ${r.ring}`,
+                `Audience: ${r.audience} · Status: ${r.status}`,
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#f3f2f1' },
+          ticks: {
+            callback: (v) => formatImpact(metricKey, v),
+            font: { size: 11 }
+          }
+        },
+        y: {
+          grid: { display: false },
+          ticks: {
+            font: { size: 11 },
+            autoSkip: false,
+          }
+        }
+      },
+      onClick: (evt, els) => {
+        if (els.length === 0) return;
+        const idx = els[0].index;
+        const clicked = rows[idx];
+        selectedExpId = (selectedExpId === clicked.id) ? null : clicked.id;
+        update();
+      }
+    }
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Table
+ * ------------------------------------------------------------------ */
+let sortCol = 'impact';
+let sortDir = 'desc';
+
+function sortRows(rows, metricKey, col, dir) {
+  const mul = dir === 'asc' ? 1 : -1;
+  return rows.slice().sort((a, b) => {
+    let va, vb;
+    switch (col) {
+      case 'recommendation': va = a.recommendation; vb = b.recommendation; break;
+      case 'name':           va = a.name; vb = b.name; break;
+      case 'status':         va = a.status; vb = b.status; break;
+      case 'product':        va = a.product; vb = b.product; break;
+      case 'started':        va = a.startedDate.getTime(); vb = b.startedDate.getTime(); break;
+      case 'ring':           va = a.ring; vb = b.ring; break;
+      case 'audience':       va = a.audience; vb = b.audience; break;
+      case 'pvalue':         va = a.metrics[metricKey].pValue; vb = b.metrics[metricKey].pValue; break;
+      case 'impact':
+      default:               va = a.metrics[metricKey].value; vb = b.metrics[metricKey].value; break;
+    }
+    if (typeof va === 'string') return va.localeCompare(vb) * mul;
+    return (va - vb) * mul;
+  });
+}
+
+function renderTable(rows, metricKey) {
+  const tbody = document.getElementById('exp-tbody');
+  const empty = document.getElementById('empty-state-table');
+  const footer = document.getElementById('table-footer');
+  const count = document.getElementById('table-count');
+
+  // R-10: when bar selected, table shows only selected
+  let display = selectedExpId ? rows.filter(r => r.id === selectedExpId) : rows;
+  display = sortRows(display, metricKey, sortCol, sortDir);
+
+  count.textContent = `${display.length} experiment${display.length !== 1 ? 's' : ''}` +
+                      (selectedExpId ? ' (selection active)' : '');
+
+  if (display.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    footer.textContent = '';
+    return;
+  }
+  empty.classList.add('hidden');
+
+  tbody.innerHTML = display.map(r => {
+    const m = r.metrics[metricKey];
+    const impactCls = m.value >= 0 ? 'impact-pos' : 'impact-neg';
+    const recCls = r.recommendation === 'Ship' ? 'ship'
+                 : r.recommendation === 'No-Ship' ? 'no-ship' : 'inconclusive';
+    const statusCls = r.status.toLowerCase();
+    return `
+      <tr data-id="${r.id}" class="${selectedExpId === r.id ? 'selected' : ''}">
+        <td><span class="badge ${recCls}">${r.recommendation}</span></td>
+        <td><strong>${r.name}</strong><div style="color:var(--text-subtle);font-size:11.5px;">${r.featureName} · ${r.progressionName}</div></td>
+        <td><span class="badge ${statusCls}">${r.status}</span></td>
+        <td>${r.product}</td>
+        <td>${formatDate(r.startedDate)}</td>
+        <td>${r.ring}</td>
+        <td>${r.audience}</td>
+        <td class="${impactCls}">${formatImpact(metricKey, m.value)}</td>
+        <td>${m.pValue.toFixed(4)}</td>
+        <td><a class="details-link" href="#" data-id="${r.id}">Details →</a></td>
+      </tr>
+    `;
+  }).join('');
+
+  footer.textContent =
+    `Showing ${display.length} of ${rows.length} significant experiments. ` +
+    `Deduplicated by (Feature, Progression, Product). p ≤ 0.05.`;
+
+  // sort header arrows
+  document.querySelectorAll('table.exp-table th[data-col]').forEach(th => {
+    const col = th.getAttribute('data-col');
+    th.classList.toggle('active-sort', col === sortCol);
+    let arrow = th.querySelector('.sort-arrow');
+    if (col === sortCol) {
+      if (!arrow) { arrow = document.createElement('span'); arrow.className = 'sort-arrow'; th.appendChild(arrow); }
+      arrow.textContent = ' ' + (sortDir === 'asc' ? '▲' : '▼');
+    } else if (arrow) {
+      arrow.remove();
+    }
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Stats
+ * ------------------------------------------------------------------ */
+function renderStats(rows, metricKey) {
+  const positives = rows.filter(r => r.metrics[metricKey].value > 0);
+  const negatives = rows.filter(r => r.metrics[metricKey].value < 0);
+  const net = rows.reduce((s, r) => s + r.metrics[metricKey].value, 0);
+
+  document.getElementById('stat-count').textContent    = rows.length;
+  document.getElementById('stat-positive').textContent = positives.length;
+  document.getElementById('stat-negative').textContent = negatives.length;
+  document.getElementById('stat-net').textContent      = formatImpact(metricKey, net);
+  document.getElementById('stat-net').style.color      = net >= 0 ? 'var(--green)' : 'var(--red)';
+
+  document.getElementById('chart-metric-name').textContent = '— ' + METRICS[metricKey].label;
+  document.getElementById('clear-selection').classList.toggle('visible', !!selectedExpId);
+}
+
+/* ------------------------------------------------------------------ *
+ * Main update orchestration
+ * ------------------------------------------------------------------ */
+function update() {
+  const f = getFilters();
+  let rows = applyFilters(ALL_DATA, f);
+  rows = deduplicate(rows);
+  rows = gateSignificance(rows, f.metric);
+
+  renderStats(rows, f.metric);
+  renderChart(rows, f.metric);
+  renderTable(rows, f.metric);
+
+  // keep state in URL hash
+  const params = new URLSearchParams();
+  Object.entries(f).forEach(([k, v]) => { if (v) params.set(k, v); });
+  history.replaceState(null, '', '#' + params.toString());
+}
+
+/* ------------------------------------------------------------------ *
+ * Event wiring
+ * ------------------------------------------------------------------ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 1800);
+}
+
+document.querySelectorAll('.filter input, .filter select, #metric').forEach(el => {
+  el.addEventListener('change', () => { selectedExpId = null; update(); });
+});
+
+document.querySelectorAll('table.exp-table th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.getAttribute('data-col');
+    if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    else { sortCol = col; sortDir = (col === 'impact' || col === 'started') ? 'desc' : 'asc'; }
+    update();
+  });
+});
+
+document.getElementById('clear-selection').addEventListener('click', () => {
+  selectedExpId = null;
+  update();
+});
+
+document.getElementById('exp-tbody').addEventListener('click', (e) => {
+  if (e.target.classList.contains('details-link')) {
+    e.preventDefault();
+    const id = e.target.getAttribute('data-id');
+    showToast(`(Prototype) Would open Expedite experiment detail page for ${id}`);
+  }
+});
+
+document.getElementById('btn-copy').addEventListener('click', () => {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(
+    () => showToast('Link copied to clipboard'),
+    () => showToast('Copy failed — URL: ' + url)
+  );
+});
+
+document.getElementById('btn-export').addEventListener('click', () => {
+  const f = getFilters();
+  let rows = applyFilters(ALL_DATA, f);
+  rows = deduplicate(rows);
+  rows = gateSignificance(rows, f.metric);
+  rows = sortRows(rows, f.metric, sortCol, sortDir);
+  if (selectedExpId) rows = rows.filter(r => r.id === selectedExpId);
+
+  const headers = ['IDEAS Recommendation','Name','Feature','Progression','Status',
+                   'Product','Started','Ring','Audience','Treatment Count',
+                   'Metric','Impact','p-value'];
+  const csvRows = rows.map(r => {
+    const m = r.metrics[f.metric];
+    return [
+      r.recommendation, r.name, r.featureName, r.progressionName, r.status,
+      r.product, formatDate(r.startedDate), r.ring, r.audience, r.treatmentCount,
+      METRICS[f.metric].label, m.value, m.pValue
+    ].map(v => {
+      const s = String(v).replace(/"/g, '""');
+      return /[,"\n]/.test(s) ? `"${s}"` : s;
+    }).join(',');
+  });
+  const csv = [headers.join(','), ...csvRows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `copilot-metric-impact-${f.metric}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Exported ${rows.length} rows`);
+});
+
+/* ------------------------------------------------------------------ *
+ * Restore filters from URL hash
+ * ------------------------------------------------------------------ */
+(function restoreFromHash() {
+  if (!location.hash) return;
+  const params = new URLSearchParams(location.hash.replace(/^#/, ''));
+  ['start','end','status','ring','audience','product','metric'].forEach(k => {
+    const v = params.get(k);
+    if (!v) return;
+    const id = (k === 'metric') ? 'metric' : ('f-' + k);
+    const el = document.getElementById(id);
+    if (el) el.value = v;
+  });
+})();
+
+/* ------------------------------------------------------------------ *
+ * Initial render
+ * ------------------------------------------------------------------ */
+update();
+</script>
+</body>
+</html>
