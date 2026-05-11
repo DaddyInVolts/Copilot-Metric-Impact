@@ -6,9 +6,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #faf9f8;
+    --bg: #f3f3f3;
     --surface: #ffffff;
-    --border: #edebe9;
+    --border: #e5e5e5;
     --border-strong: #d2d0ce;
     --text: #201f1e;
     --text-muted: #605e5c;
@@ -22,7 +22,8 @@
     --amber: #ca5010;
     --amber-bg: #fff4ce;
     --grey-bar: #c8c6c4;
-    --header-bg: #1a2332;
+    --header-bg: #0078d4;
+    --rail-bg: #fafafa;
     --shadow: 0 1.6px 3.6px rgba(0,0,0,0.08), 0 0.3px 0.9px rgba(0,0,0,0.06);
   }
   * { box-sizing: border-box; }
@@ -39,36 +40,96 @@
   .app-bar {
     background: var(--header-bg);
     color: #fff;
-    padding: 12px 24px;
+    height: 56px;
+    padding: 0 20px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
   }
   .app-bar .logo {
-    width: 28px; height: 28px;
-    background: linear-gradient(135deg, #0078d4 0%, #00bcf2 100%);
-    border-radius: 4px;
+    width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 16px;
+    color: #fff;
   }
-  .app-bar .brand { font-weight: 600; font-size: 15px; }
-  .app-bar .crumbs { color: #b3b0ad; font-size: 13px; margin-left: 8px; }
-  .app-bar .crumbs strong { color: #fff; }
+  .app-bar .logo svg { width: 28px; height: 28px; }
+  .app-bar .brand { font-weight: 600; font-size: 15px; letter-spacing: 0.1px; }
   .app-bar .spacer { flex: 1; }
-  .app-bar .freshness { font-size: 12px; color: #a19f9d; }
+  .app-bar .top-action {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    background: transparent;
+    border: none;
+    transition: background-color 0.15s;
+  }
+  .app-bar .top-action:hover { background: rgba(255,255,255,0.12); }
+  .app-bar .user-chip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 12px 4px 4px;
+    border-radius: 18px;
+    cursor: pointer;
+  }
+  .app-bar .user-chip:hover { background: rgba(255,255,255,0.08); }
+  .app-bar .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #ffb900;
+    color: #201f1e;
+    font-weight: 700;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .app-bar .user-name { font-size: 13px; color: #fff; }
 
   .layout {
     display: grid;
-    grid-template-columns: 220px 1fr;
-    min-height: calc(100vh - 52px);
+    grid-template-columns: 200px 1fr;
+    min-height: calc(100vh - 56px);
   }
 
   /* Left nav */
   .left-nav {
-    background: #fff;
+    background: var(--rail-bg);
     border-right: 1px solid var(--border);
-    padding: 16px 0;
+    padding: 8px 0;
   }
+  .left-nav .rail-hamburger {
+    display: flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px;
+    margin: 4px 8px 12px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .left-nav .rail-hamburger:hover { background: #efefef; }
+  .left-nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 16px 9px 13px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+  }
+  .left-nav a .nav-ico {
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .left-nav a .nav-ico svg { width: 18px; height: 18px; }
+  .left-nav a:hover { background: #efefef; }
+  .left-nav a.active {
+    background: #ebf3fb;
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+  .left-nav a.active .nav-ico { color: var(--accent); }
   .left-nav .section-label {
     text-transform: uppercase;
     font-size: 11px;
@@ -76,21 +137,6 @@
     font-weight: 600;
     letter-spacing: 0.5px;
     padding: 8px 16px;
-  }
-  .left-nav a {
-    display: block;
-    padding: 8px 16px;
-    color: var(--text);
-    text-decoration: none;
-    font-size: 13px;
-    border-left: 3px solid transparent;
-  }
-  .left-nav a:hover { background: #f3f2f1; }
-  .left-nav a.active {
-    background: #eff6fc;
-    color: var(--accent);
-    border-left-color: var(--accent);
-    font-weight: 600;
   }
   .left-nav .nested {
     padding-left: 16px;
@@ -376,23 +422,77 @@
 </div>
 
 <div class="app-bar">
-  <div class="logo">E</div>
-  <div class="brand">Expedite</div>
-  <div class="crumbs">Copilot &nbsp;›&nbsp; <strong>Metric Impact</strong></div>
+  <div class="logo" aria-hidden="true">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 2.5L24.5 8.5V19.5L14 25.5L3.5 19.5V8.5L14 2.5Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M14 2.5V14L3.5 8.5" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M14 14V25.5" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M14 14L24.5 8.5" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="brand">IDEAS Experimentation</div>
   <div class="spacer"></div>
-  <div class="freshness">Data last updated: 2026-05-09 06:00 UTC</div>
+  <button class="top-action" aria-label="Toggle theme" title="Toggle theme">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <div class="user-chip" role="button" tabindex="0">
+    <div class="avatar">DL</div>
+    <span class="user-name">David Lydston</span>
+  </div>
 </div>
 
 <div class="layout">
-  <nav class="left-nav">
-    <div class="section-label">Copilot</div>
-    <a href="#">Copilot Experiment Impact</a>
-    <a href="#" class="active">Copilot Metric Impact</a>
-    <div class="section-label" style="margin-top:16px;">Workspaces</div>
-    <a href="#">Experiments</a>
-    <a href="#">Metric Sets</a>
-    <a href="#">Scorecards</a>
-    <a href="#">Data Sources</a>
+  <nav class="left-nav" aria-label="Primary">
+    <div class="rail-hamburger" role="button" aria-label="Collapse navigation" title="Collapse navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <a href="#">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      Home
+    </a>
+    <a href="#" class="active">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      Copilot Experiment Impact
+    </a>
+    <a href="#">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5H6.5A2.5 2.5 0 0 0 4 19.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      Wiki
+    </a>
+    <a href="#">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M3 9h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </span>
+      Office Hours
+    </a>
+    <a href="#">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 11.5a8.5 8.5 0 0 1-.5 3 8.5 8.5 0 0 1-7.5 5 8.5 8.5 0 0 1-3-.5L3 21l2-7a8.5 8.5 0 0 1-.5-3 8.5 8.5 0 0 1 5-7.5 8.5 8.5 0 0 1 3-.5h.5a8.48 8.48 0 0 1 8 8v.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M8 11h8M8 14h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </span>
+      Give Feedback
+    </a>
   </nav>
 
   <main class="main">
