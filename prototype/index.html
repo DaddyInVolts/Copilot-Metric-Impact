@@ -320,22 +320,30 @@
   }
   .card-actions {
     display: flex;
-    gap: 2px;
+    gap: 8px;
     margin-left: auto;
   }
   .icon-btn {
-    width: 32px; height: 32px;
-    border: 1px solid transparent;
-    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    background: #fff;
     border-radius: 4px;
     cursor: pointer;
-    color: var(--text-muted);
-    display: flex; align-items: center; justify-content: center;
-    transition: background-color 0.15s, color 0.15s;
+    color: var(--text);
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: background-color 0.15s, border-color 0.15s;
   }
-  .icon-btn:hover { background: #f3f2f1; color: var(--text); }
+  .icon-btn:hover { background: #f3f2f1; border-color: #c8c6c4; }
   .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .icon-btn svg { width: 18px; height: 18px; }
+  .icon-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .icon-btn .ic-columns { color: #605e5c; }
+  .icon-btn .ic-copy    { color: #0078d4; }
+  .icon-btn .ic-export  { color: #107c41; }
   .chart-wrap {
     position: relative;
     height: 480px;
@@ -434,6 +442,40 @@
   .badge.active { background: var(--green-bg); color: var(--green); }
   .badge.stopped { background: #f3f2f1; color: var(--text-muted); }
   .badge.completed { background: #deecf9; color: var(--accent); }
+
+  /* Recommendation column button — filled colored pill with icon + label */
+  .rec-cell {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .rec-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px 4px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .rec-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .rec-btn.ship         { background: #dff6dd; color: #107c10; border-color: #c4e5c1; }
+  .rec-btn.no-ship      { background: #fde7e9; color: #a4262c; border-color: #f3c4c8; }
+  .rec-btn.inconclusive { background: #fff4ce; color: #8a6e1c; border-color: #f1deb2; }
+  .rec-cell .details-link {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .rec-cell .details-link svg { width: 11px; height: 11px; }
+  .rec-cell .details-link:hover { color: var(--accent); text-decoration: underline; }
 
   .impact-pos { color: var(--green); font-weight: 600; }
   .impact-neg { color: var(--red); font-weight: 600; }
@@ -666,24 +708,26 @@
         <h2 class="card-title">Copilot Experiments</h2>
         <div class="card-meta" id="table-count"></div>
         <div class="card-actions">
-          <button class="icon-btn" id="btn-copy" aria-label="Copy link" title="Copy link to this view">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <button class="icon-btn" id="btn-export" aria-label="Export to Excel" title="Export to Excel">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M12 15V3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <button class="icon-btn" id="btn-columns" aria-label="Column options" title="Column options">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <button class="icon-btn" id="btn-columns" title="Column options">
+            <svg class="ic-columns" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="3" y="4" width="18" height="16" rx="1.5" stroke="currentColor" stroke-width="1.7"/>
               <path d="M9 4v16M15 4v16" stroke="currentColor" stroke-width="1.7"/>
             </svg>
+            <span>Columns</span>
+          </button>
+          <button class="icon-btn" id="btn-copy" title="Copy link to this view">
+            <svg class="ic-copy" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Copy Link</span>
+          </button>
+          <button class="icon-btn" id="btn-export" title="Export to Excel">
+            <svg class="ic-export" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="16" rx="1.5" fill="currentColor" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M8 9l8 6M16 9l-8 6" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span>Export to Excel</span>
           </button>
         </div>
       </div>
@@ -700,7 +744,6 @@
               <th data-col="audience">Audience</th>
               <th data-col="impact" class="active-sort">Impact <span class="sort-arrow">▼</span></th>
               <th data-col="pvalue">p-value</th>
-              <th></th>
             </tr>
           </thead>
           <tbody id="exp-tbody"></tbody>
@@ -1083,10 +1126,21 @@ function renderTable(rows, metricKey) {
     const impactCls = m.value >= 0 ? 'impact-pos' : 'impact-neg';
     const recCls = r.recommendation === 'Ship' ? 'ship'
                  : r.recommendation === 'No-Ship' ? 'no-ship' : 'inconclusive';
+    const recIcon = recCls === 'ship'
+      ? '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="currentColor"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : recCls === 'no-ship'
+        ? '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="currentColor"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="currentColor"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.3-1 .7-1 1.4v.3M12 16.5v.5" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const detailsIcon = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
     const statusCls = r.status.toLowerCase();
     return `
       <tr data-id="${r.id}" class="${selectedExpId === r.id ? 'selected' : ''}">
-        <td><span class="badge ${recCls}">${r.recommendation}</span></td>
+        <td>
+          <div class="rec-cell">
+            <span class="rec-btn ${recCls}">${recIcon}<span>${r.recommendation}</span></span>
+            <a class="details-link" href="#" data-id="${r.id}">${detailsIcon}<span>Details</span></a>
+          </div>
+        </td>
         <td><strong class="row-name"><span class="row-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>${r.name}</strong><div style="color:var(--text-subtle);font-size:11.5px;margin-left:24px;">${r.featureName} · ${r.progressionName}</div></td>
         <td><span class="badge ${statusCls}">${r.status}</span></td>
         <td>${r.product}</td>
@@ -1095,7 +1149,6 @@ function renderTable(rows, metricKey) {
         <td>${r.audience}</td>
         <td class="${impactCls}">${formatImpact(metricKey, m.value)}</td>
         <td>${m.pValue.toFixed(4)}</td>
-        <td><a class="details-link" href="#" data-id="${r.id}">Details →</a></td>
       </tr>
     `;
   }).join('');
@@ -1181,9 +1234,10 @@ document.getElementById('clear-selection').addEventListener('click', () => {
 });
 
 document.getElementById('exp-tbody').addEventListener('click', (e) => {
-  if (e.target.classList.contains('details-link')) {
+  if (e.target.closest('.details-link')) {
     e.preventDefault();
-    const id = e.target.getAttribute('data-id');
+    const link = e.target.closest('.details-link');
+    const id = link.getAttribute('data-id');
     showToast(`(Prototype) Would open Expedite experiment detail page for ${id}`);
   }
 });
