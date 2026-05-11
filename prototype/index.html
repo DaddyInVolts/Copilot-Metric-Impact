@@ -307,6 +307,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
+    gap: 12px;
   }
   .card-title {
     font-size: 16px;
@@ -317,6 +318,24 @@
     font-size: 12px;
     color: var(--text-muted);
   }
+  .card-actions {
+    display: flex;
+    gap: 2px;
+    margin-left: auto;
+  }
+  .icon-btn {
+    width: 32px; height: 32px;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: background-color 0.15s, color 0.15s;
+  }
+  .icon-btn:hover { background: #f3f2f1; color: var(--text); }
+  .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .icon-btn svg { width: 18px; height: 18px; }
   .chart-wrap {
     position: relative;
     height: 480px;
@@ -363,31 +382,43 @@
     font-size: 13px;
   }
   table.exp-table th {
-    background: #faf9f8;
+    background: #fff;
     border-bottom: 1px solid var(--border-strong);
-    padding: 10px 12px;
+    padding: 12px 16px;
     text-align: left;
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--text);
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
     position: sticky;
     top: 0;
+    font-size: 12.5px;
   }
-  table.exp-table th:hover { background: #f3f2f1; }
+  table.exp-table th:hover { background: #fafafa; }
   table.exp-table th .sort-arrow {
     color: var(--accent);
     margin-left: 4px;
-    font-size: 11px;
+    font-size: 10px;
   }
   table.exp-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f2f1;
     vertical-align: middle;
   }
+  table.exp-table tr:last-child td { border-bottom: 0; }
   table.exp-table tr:hover td { background: #fafafa; }
   table.exp-table tr.selected td { background: #eff6fc !important; }
+
+  .row-icon {
+    display: inline-flex;
+    vertical-align: middle;
+    margin-right: 10px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .row-icon svg { width: 14px; height: 14px; display: block; }
+  .row-name { display: inline-flex; align-items: center; }
 
   .badge {
     display: inline-block;
@@ -589,10 +620,6 @@
           <option value="Loop">Loop</option>
         </select>
       </div>
-      <div class="actions">
-        <button class="btn" id="btn-copy">🔗 Copy Link</button>
-        <button class="btn primary" id="btn-export">⬇ Export to Excel</button>
-      </div>
     </div>
 
     <!-- Metric selector + summary -->
@@ -637,8 +664,29 @@
     <!-- Table card -->
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Experiment Details</h2>
+        <h2 class="card-title">Copilot Experiments</h2>
         <div class="card-meta" id="table-count"></div>
+        <div class="card-actions">
+          <button class="icon-btn" id="btn-copy" aria-label="Copy link" title="Copy link to this view">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="btn-export" aria-label="Export to Excel" title="Export to Excel">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 15V3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="btn-columns" aria-label="Column options" title="Column options">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="16" rx="1.5" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M9 4v16M15 4v16" stroke="currentColor" stroke-width="1.7"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div style="overflow-x:auto;">
         <table class="exp-table" id="exp-table">
@@ -1040,7 +1088,7 @@ function renderTable(rows, metricKey) {
     return `
       <tr data-id="${r.id}" class="${selectedExpId === r.id ? 'selected' : ''}">
         <td><span class="badge ${recCls}">${r.recommendation}</span></td>
-        <td><strong>${r.name}</strong><div style="color:var(--text-subtle);font-size:11.5px;">${r.featureName} · ${r.progressionName}</div></td>
+        <td><strong class="row-name"><span class="row-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>${r.name}</strong><div style="color:var(--text-subtle);font-size:11.5px;margin-left:24px;">${r.featureName} · ${r.progressionName}</div></td>
         <td><span class="badge ${statusCls}">${r.status}</span></td>
         <td>${r.product}</td>
         <td>${formatDate(r.startedDate)}</td>
@@ -1183,6 +1231,11 @@ document.getElementById('btn-export').addEventListener('click', () => {
   a.click();
   URL.revokeObjectURL(url);
   showToast(`Exported ${rows.length} rows`);
+});
+
+/* Column options icon — placeholder */
+document.getElementById('btn-columns').addEventListener('click', () => {
+  showToast('Column options coming soon');
 });
 
 /* ------------------------------------------------------------------ *
