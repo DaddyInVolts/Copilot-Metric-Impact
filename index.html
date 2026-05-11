@@ -334,7 +334,7 @@
   <div class="meta-bar">
     <div class="meta-item"><strong>PM Owner</strong> David Lydston</div>
     <div class="meta-item"><strong>Team</strong> IDEAS Experimentation</div>
-    <div class="meta-item"><strong>Last Updated</strong> May 7, 2026</div>
+    <div class="meta-item"><strong>Last Updated</strong> May 11, 2026</div>
     <div class="meta-item"><strong>Status</strong> Draft</div>
     <div class="meta-item"><strong>Stakeholders</strong> M365 Copilot Leadership, Experiment Owners, Expedite Engineering, Data Science</div>
   </div>
@@ -510,7 +510,7 @@
       <tr>
         <td><span class="badge badge-p0">P0</span></td>
         <td>R-08</td>
-        <td>Display a detailed experiment table below the chart with columns: IDEAS Recommendation (Ship/No-Ship), Name, Status, Product, Started, Ring, Audience, and the selected metric's impact value</td>
+        <td>Display a detailed experiment table below the chart with columns: IDEAS Recommendation (Ship / No-Ship / Inconclusive), Name, Status, Product, Started, Ring, Audience, and the selected metric's impact value</td>
         <td>Table columns match the Copilot Experiment Impact table layout; table is sortable by each column; table rows correspond 1:1 with chart bars</td>
         <td>Table design mirrors existing Copilot Experiment Impact table</td>
       </tr>
@@ -547,6 +547,48 @@
         <td>R-13</td>
         <td>Display an empty statewith guidance when no experiments meet the significance threshold for the selected metric and filters</td>
         <td>Message reads: "No statistically significant experiments found for this metric with the selected filters"; suggests broadening date range or adjusting filters</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-p0">P0</span></td>
+        <td>R-14</td>
+        <td>Apply the standard IDEAS Experimentation page chrome: blue (#0078d4) top app bar with brand mark and user avatar, light-gray (#fafafa) left navigation rail with five items (Home, Copilot Experiment Impact [active], Wiki, Office Hours, Give Feedback), and a neutral page background (#f3f3f3)</td>
+        <td>Top bar, left rail, and page background match the IDEAS Experimentation alpha; left rail is collapsible via a hamburger affordance; the active item is indicated by a 3px blue left border; visual style matches the Expedite Experiment Detail page for cross-page consistency</td>
+        <td>Shared chrome with Expedite Experiment Detail spec</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-p1">P1</span></td>
+        <td>R-15</td>
+        <td>Render filter controls as rounded pill chips. Each chip shows its label inline followed by a colon (e.g., "Product:"), uses a white background with a light gray border and ~18px corner radius, and displays a custom chevron for selects and date inputs. The filter row sits directly on the page background with no card surround.</td>
+        <td>All filters render as 32px-tall pills with inline labels and a custom chevron; the native browser date-picker icon is suppressed; clicking a chip activates the underlying form control</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-p1">P1</span></td>
+        <td>R-16</td>
+        <td>Move the "Copy Link" and "Export to Excel" actions out of the filter bar and into the right side of the experiment table card header as labeled icon buttons. Add a third "Columns" button in the same row for column visibility options. Each button is a white pill with a thin gray border, brand-colored icon, and text label.</td>
+        <td>Three buttons render right-aligned in the table card header in the order Columns, Copy Link, Export to Excel; the filter bar no longer contains action buttons; Copy Link icon is blue, Export to Excel icon is Excel-green, Columns icon is gray</td>
+        <td>Supersedes prior placement implied by R-11 and R-12</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-p1">P1</span></td>
+        <td>R-17</td>
+        <td>Render the IDEAS Recommendation cell as a filled colored pill with a leading status glyph and the recommendation text: green pill + white check for Ship, red pill + white X for No-Ship, yellow pill + white "?" for Inconclusive. Place each row's "Details" link directly beneath the recommendation pill in the same cell, prefixed with a small document icon. Remove the separate trailing Details column.</td>
+        <td>Each first-column cell shows the rec pill (icon + text) with the Details link stacked below; clicking the Details link or its icon navigates to the experiment detail page; no separate Details column appears at the end of the table</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-p2">P2</span></td>
+        <td>R-18</td>
+        <td>Name the experiment table card "Copilot Experiments" (not "Experiment Details"). Prefix each row's experiment name with a small document icon and indent the subtitle (Feature · Progression) under the name for clear hierarchy with the recommendation pill.</td>
+        <td>Card title reads "Copilot Experiments"; each row name shows a small document SVG glyph before the experiment name; the Feature · Progression subtitle is visually indented under the name</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-p2">P2</span></td>
+        <td>R-19</td>
+        <td>Remove the "Net impact" stat tile from the metric summary row. Summing percentage-point deltas across unrelated experiments has no meaningful interpretation. Retain the Significant experiments, Improved, and Degraded counts.</td>
+        <td>Net impact tile no longer renders; the remaining three stats (Significant experiments, Improved, Degraded) render in the same row beside the metric selector</td>
         <td></td>
       </tr>
     </tbody>
@@ -586,9 +628,10 @@
 
   <h3>Page Layout</h3>
   <ul>
-    <li><strong>Top Bar:</strong> Filter controls in a horizontal row — Start Date, End Date, Status, Ring, Audience, Product — followed by the Metric selector dropdown. "Copy Link" and "Export to Excel" buttons anchored to the right.</li>
+    <li><strong>App Chrome:</strong> Blue (#0078d4) top app bar with the IDEAS Experimentation brand mark and user avatar. Light-gray (#fafafa) left navigation rail with five items (Home, Copilot Experiment Impact [active], Wiki, Office Hours, Give Feedback) and a hamburger collapse affordance. Page background is #f3f3f3. Matches the Expedite Experiment Detail page for cross-page consistency. (See R-14.)</li>
+    <li><strong>Filter Bar:</strong> Filter controls as rounded pill chips on the page background — Start, End, Status, Ring, Audience, Product. Each chip shows its label inline with a colon and a custom chevron. (See R-15.) The Metric selector dropdown sits with the Significant / Improved / Degraded stats in a row beneath the filters. No action buttons in the filter bar.</li>
     <li><strong>Chart Area:</strong> A horizontal or vertical bar chart ranking experiments from most improved to most degraded. Bars are colored green (positive impact) and red (negative impact). The Y-axis dynamically scales to the data range. Hovering over a bar shows a tooltip with experiment name, impact value, and p-value.</li>
-    <li><strong>Table Area:</strong> A data table below the chart matching the Copilot Experiment Impact table format. Columns include: IDEAS Recommendation (Ship/No-Ship badge), Name, Status (Active/Stopped badge), Product, Started date, Ring, Audience, and the selected metric value. Each row has a "Details" link.</li>
+    <li><strong>Table Area:</strong> Card titled "Copilot Experiments". Top-right of the card header carries three labeled icon buttons: Columns, Copy Link, Export to Excel. (See R-16.) Columns include: IDEAS Recommendation (filled colored pill with status glyph + Details link stacked beneath), Name (with leading document icon, Feature · Progression subtitle indented underneath), Status (Active / Stopped badge), Product, Started date, Ring, Audience, and the selected metric value. (See R-17, R-18.)</li>
   </ul>
 
   <h3>Key Interaction Notes</h3>
