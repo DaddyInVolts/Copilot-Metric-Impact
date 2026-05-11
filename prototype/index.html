@@ -638,7 +638,6 @@
         <div class="stat"><strong id="stat-count">–</strong><div class="label">Significant experiments</div></div>
         <div class="stat"><strong id="stat-positive" style="color:var(--green);">–</strong><div class="label">Improved</div></div>
         <div class="stat"><strong id="stat-negative" style="color:var(--red);">–</strong><div class="label">Degraded</div></div>
-        <div class="stat"><strong id="stat-net">–</strong><div class="label">Net impact</div></div>
       </div>
     </div>
 
@@ -1125,13 +1124,10 @@ function renderTable(rows, metricKey) {
 function renderStats(rows, metricKey) {
   const positives = rows.filter(r => r.metrics[metricKey].value > 0);
   const negatives = rows.filter(r => r.metrics[metricKey].value < 0);
-  const net = rows.reduce((s, r) => s + r.metrics[metricKey].value, 0);
 
   document.getElementById('stat-count').textContent    = rows.length;
   document.getElementById('stat-positive').textContent = positives.length;
   document.getElementById('stat-negative').textContent = negatives.length;
-  document.getElementById('stat-net').textContent      = formatImpact(metricKey, net);
-  document.getElementById('stat-net').style.color      = net >= 0 ? 'var(--green)' : 'var(--red)';
 
   document.getElementById('chart-metric-name').textContent = '— ' + METRICS[metricKey].label;
   document.getElementById('clear-selection').classList.toggle('visible', !!selectedExpId);
