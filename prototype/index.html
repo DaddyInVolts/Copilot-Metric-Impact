@@ -158,38 +158,76 @@
     margin-bottom: 20px;
   }
 
-  /* Filter bar */
+  /* Filter bar — pill chips */
   .filter-bar {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 14px 16px;
-    box-shadow: var(--shadow);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px 16px;
-    align-items: flex-end;
+    gap: 8px;
+    align-items: center;
     margin-bottom: 16px;
   }
   .filter {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: inline-flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #d2d0ce;
+    border-radius: 18px;
+    height: 32px;
+    padding: 0;
+    position: relative;
+    transition: border-color 0.15s, background-color 0.15s;
+  }
+  .filter:hover { background: #fafafa; border-color: #a19f9d; }
+  .filter:focus-within { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .filter label {
+    padding: 0 4px 0 14px;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    margin: 0;
+    cursor: pointer;
+  }
+  .filter label::after { content: ":"; }
+  .filter select,
+  .filter input {
+    border: none;
+    background: transparent;
+    padding: 0 30px 0 4px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--text-muted);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    height: 30px;
+    cursor: pointer;
+    outline: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23605e5c' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+  }
+  .filter select { padding-right: 30px; }
+  .filter input[type="date"] {
+    color-scheme: light;
     min-width: 130px;
   }
-  .filter label {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 600;
+  .filter input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
   }
-  .filter input, .filter select {
-    padding: 6px 8px;
-    border: 1px solid var(--border-strong);
-    border-radius: 2px;
-    font: inherit;
-    background: #fff;
-  }
-  .filter select { min-width: 150px; }
   .filter-bar .actions {
     margin-left: auto;
     display: flex;
@@ -199,11 +237,12 @@
     padding: 6px 14px;
     border: 1px solid var(--border-strong);
     background: #fff;
-    border-radius: 2px;
+    border-radius: 16px;
     font: inherit;
     cursor: pointer;
     font-weight: 600;
     color: var(--text);
+    height: 32px;
   }
   button.btn:hover { background: #f3f2f1; }
   button.btn.primary {
@@ -502,11 +541,11 @@
     <!-- Filter bar -->
     <div class="filter-bar">
       <div class="filter">
-        <label for="f-start">Start Date</label>
+        <label for="f-start">Start</label>
         <input type="date" id="f-start" value="2026-04-09">
       </div>
       <div class="filter">
-        <label for="f-end">End Date</label>
+        <label for="f-end">End</label>
         <input type="date" id="f-end" value="2026-05-09">
       </div>
       <div class="filter">
